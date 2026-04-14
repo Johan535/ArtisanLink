@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: ArtisanLink
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+
+server:
+  port: 8124
+  servlet:
+    context-path: /api
+
+# MyBatis配置
+mybatis:
+  # mapper配置文件位置
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.johan.artisanlink.entity
+  configuration:
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
+
+# JWT配置
+artisanlink:
+  jwt:
+    # 管理员JWT配置
+    admin-secret-key: artisanlink_admin_secret
+    # 管理员JWT过期时间(毫秒) - 2小时
+    admin-ttl: 7200000
+    # 管理员令牌名称
+    admin-token-name: token
+    # 用户JWT配置
+    user-secret-key: artisanlink_user_secret
+    # 用户JWT过期时间(毫秒) - 2小时
+    user-ttl: 7200000
+    # 用户令牌名称
+    user-token-name: authentication
+
+# 阿里云OSS配置
+aliyun:
+  endpoint: https://oss-cn-hangzhou.aliyuncs.com
+  access-key-id: ${ARTISANLINK_ALIYUN_ACCESS_KEY_ID}
+  access-key-secret: ${ARTISANLINK_ALIYUN_ACCESS_KEY_SECRET}
+  bucket-name: ${ARTISANLINK_ALIYUN_BUCKET_NAME}
+
+# 微信登录配置
+wechat:
+  appid: ${ARTISANLINK_WECHAT_APPID}
+  secret: ${ARTISANLINK_WECHAT_SECRET}
+
+
+

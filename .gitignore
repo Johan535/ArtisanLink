@@ -1,0 +1,49 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# 1. 屏蔽本地开发私密配置（最重要！）
+application-dev.yml
+
+# 2. Spring Boot 项目通用忽略文件（必加）
+/target/
+*.iml
+.idea/
+*.log
+*.tmp
+.mvn/
+mvnw
+mvnw.cmd
+
+# 3. 环境变量文件（方案2会用到）
+.env
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
