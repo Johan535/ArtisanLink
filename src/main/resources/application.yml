@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: ArtisanLink
+  profiles:
+    active: dev
+  main:
+    allow-circular-references: true
+
+server:
+  port: 8124
+  servlet:
+    context-path: /api
+
+# MyBatis Plus配置
+mybatis-plus:
+  # mapper配置文件位置
+  mapper-locations: classpath:mapper/*.xml
+  # 实体类包路径
+  type-aliases-package: com.johan.artisanlink.pojo.po
+  configuration:
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
+    # 打印SQL日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 主键策略：自增
+      id-type: auto
+      # 逻辑删除字段
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# JWT配置
+artisanlink:
+  jwt:
+    # 管理员JWT配置
+    admin-secret-key: artisanlink_admin_secret_key_2026
+    # 管理员JWT过期时间(毫秒) - 2小时
+    admin-ttl: 7200000
+    # 管理员令牌名称
+    admin-token-name: token
+    # 用户JWT配置
+    user-secret-key: artisanlink_user_secret_key_2026
+    # 用户JWT过期时间(毫秒) - 2小时
+    user-ttl: 7200000
+    # 用户令牌名称
+    user-token-name: authentication
+
+# Knife4j配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: ${ALIYUN_OSS_ENDPOINT:oss-cn-hangzhou.aliyuncs.com}
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET}
+    bucket-name: ${ALIYUN_OSS_BUCKET_NAME}
+
+# 微信小程序配置
+wechat:
+  miniapp:
+    appid: ${WECHAT_MINIAPP_APPID}
+    secret: ${WECHAT_MINIAPP_SECRET}
+
+
+
