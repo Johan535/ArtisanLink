@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Select;
 public interface AdminMapper extends BaseMapper<Admin> {
     // 根据用户名查询数据库中的数据
     @Select("select * from admin where username = #{username}")
-    Admin getByUsername();
+    Admin getByUsername(String username);
 }

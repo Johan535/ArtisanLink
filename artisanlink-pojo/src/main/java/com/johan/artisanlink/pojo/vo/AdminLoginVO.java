@@ -22,22 +22,6 @@ public class AdminLoginVO implements Serializable {
      */
     private AdminInfoVO adminInfo;
 
-    public AdminInfoVO getAdminInfo() {
-        return adminInfo;
-    }
-
-    public void setAdminInfo(AdminInfoVO adminInfo) {
-        this.adminInfo = adminInfo;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
     @Data
     public static class AdminInfoVO implements Serializable {
         
@@ -67,45 +51,5 @@ public class AdminLoginVO implements Serializable {
          * 头像
          */
         private String avatar;
-
-        public AdminInfoVO getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public AdminInfoVO getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public AdminInfoVO getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getPhone() {
-            return phone;
-        }
-
-        public void setPhone(String phone) {
-            this.phone = phone;
-        }
-
-        public String getAvatar() {
-            return avatar;
-        }
-
-        public void setAvatar(String avatar) {
-            this.avatar = avatar;
-        }
     }
 }

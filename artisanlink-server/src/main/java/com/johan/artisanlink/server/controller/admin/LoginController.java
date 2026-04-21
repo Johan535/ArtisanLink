@@ -26,29 +26,33 @@ public class LoginController {
     @Autowired
     private AdminService adminService;
     @Autowired
-    private JwtUtil jwtUtil;
-    @Autowired
     private JwtProperties jwtProperties;
 
     //登录
     @PostMapping("/login")
-    public Result<AdminLoginVO> login(@RequestBody AdminLoginDTO adminLoginDTO){ //@RequestBody: 将json数据映射为对象
+    public Result<AdminLoginVO> login(@RequestBody AdminLoginDTO adminLoginDTO) throws Exception { //@RequestBody: 将json数据映射为对象
         log.info("登录参数: {}", adminLoginDTO);
-        adminService.login(adminLoginDTO);
+        
+        // 创建对象实例admin，登录验证，获取管理员信息
+        Admin admin = adminService.login(adminLoginDTO);
 
         // 登陆成功后，生成JWT令牌
         Map<String, Object> claims = new HashMap<>();
-        claims.put(JwtClaimsConstant.EMP_ID, Admin.getId()); // 添加员工ID
+        claims.put(JwtClaimsConstant.EMP_ID, admin.getId()); // 添加员工ID
         String token = JwtUtil.createJWT(
                 jwtProperties.getAdminSecretKey(), // 密钥
                 jwtProperties.getAdminTtl(), // 过期时间
                 claims); //设置信息
 
-        //封装返回结果
+        // 封装返回结果
         AdminLoginVO adminLoginVO = new AdminLoginVO();
-        adminLoginVO.setAdminInfo(adminLoginVO.getAdminInfo().getId());
-        adminLoginVO.setAdminInfo(adminLoginVO.getAdminInfo().getUsername());
-        adminLoginVO.setAdminInfo(adminLoginVO.getAdminInfo().getName());
+        AdminLoginVO.AdminInfoVO adminInfoVO = new AdminLoginVO.AdminInfoVO();
+        adminInfoVO.setId(admin.getId());
+        adminInfoVO.setUsername(admin.getUsername());
+        adminInfoVO.setName(admin.getName());
+        adminInfoVO.setPhone(admin.getPhone());
+        adminInfoVO.setAvatar(admin.getAvatar());
+        adminLoginVO.setAdminInfo(adminInfoVO);
         adminLoginVO.setToken(token); // 存入令牌
 
         return Result.success(adminLoginVO); // 返回封装结果

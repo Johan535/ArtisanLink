@@ -49,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
         // 2.TODO: 验证码校验（后续实现）
         
         // 3. 根据用户名查询数据库中的数据
-        Admin admin = adminMapper.getByUsername();
+        Admin admin = adminMapper.getByUsername(loginDTO.getUsername());
 
         // 处理各种异常情况（如果用户名不存在、密码不对、账号被锁定）
         if(admin == null){
@@ -58,7 +58,7 @@ public class AdminServiceImpl implements AdminService {
         }
 
         //密码比对
-        if(!passwordEncoder.equals(admin.getPassword())){
+        if(!passwordEncoder.matches(loginDTO.getPassword(), admin.getPassword())){
             // 密码错误
             throw new  BusinessException(MessageConstant.PASSWORD_ERROR);
         }
