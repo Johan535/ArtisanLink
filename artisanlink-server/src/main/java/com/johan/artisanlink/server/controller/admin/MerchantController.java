@@ -17,7 +17,9 @@ public class MerchantController {
 
     //TODO 商户列表查询
     @GetMapping("/list")
+    public Object list() {
 
+    }
 
     //TODO 新增商户
     @PostMapping("/save")

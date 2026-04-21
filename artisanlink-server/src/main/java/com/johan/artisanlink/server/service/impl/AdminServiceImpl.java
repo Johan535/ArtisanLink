@@ -1,20 +1,20 @@
 package com.johan.artisanlink.server.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.johan.artisanlink.common.constant.MessageConstant;
+import com.johan.artisanlink.common.constant.StatusConstant;
 import com.johan.artisanlink.common.exception.BusinessException;
-import com.johan.artisanlink.common.util.JwtUtil;
 import com.johan.artisanlink.pojo.dto.AdminLoginDTO;
 import com.johan.artisanlink.pojo.po.Admin;
-import com.johan.artisanlink.pojo.vo.AdminLoginVO;
 import com.johan.artisanlink.server.mapper.AdminMapper;
 import com.johan.artisanlink.server.service.AdminService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.security.auth.login.AccountLockedException;
+import javax.security.auth.login.AccountNotFoundException;
 
 /**
  * 管理员服务实现类
@@ -23,12 +23,21 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
-    
-    private final AdminMapper adminMapper;
+
+    @Autowired
+    private AdminMapper adminMapper;
+
+    // 密码加密
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    
+
+    /**
+     *
+     * @param loginDTO 登录信息
+     * @return
+     * @throws Exception
+     */
     @Override
-    public AdminLoginVO login(AdminLoginDTO loginDTO) {
+    public Admin login(AdminLoginDTO loginDTO) throws Exception{
         // 1. 参数校验
         if (loginDTO.getUsername() == null || loginDTO.getUsername().isEmpty()) {
             throw new BusinessException("用户名不能为空");
@@ -37,51 +46,29 @@ public class AdminServiceImpl implements AdminService {
             throw new BusinessException("密码不能为空");
         }
         
-        // TODO: 验证码校验（后续实现）
+        // 2.TODO: 验证码校验（后续实现）
         
-        // 2. 查询管理员
-        LambdaQueryWrapper<Admin> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Admin::getUsername, loginDTO.getUsername());
-        Admin admin = adminMapper.selectOne(queryWrapper);
-        
-        // 3. 管理员不存在
-        if (admin == null) {
-            log.warn("管理员登录失败，用户名不存在：{}", loginDTO.getUsername());
-            throw new BusinessException("用户名或密码错误");
+        // 3. 根据用户名查询数据库中的数据
+        Admin admin = adminMapper.getByUsername();
+
+        // 处理各种异常情况（如果用户名不存在、密码不对、账号被锁定）
+        if(admin == null){
+            // 账号不存在
+            throw new AccountNotFoundException(MessageConstant.ACCOUNT_NOT_FOUND);
         }
-        
-        // 4. 验证密码（使用BCrypt）
-        if (!passwordEncoder.matches(loginDTO.getPassword(), admin.getPassword())) {
-            log.warn("管理员登录失败，密码错误：{}", loginDTO.getUsername());
-            throw new BusinessException("用户名或密码错误");
+
+        //密码比对
+        if(!passwordEncoder.equals(admin.getPassword())){
+            // 密码错误
+            throw new  BusinessException(MessageConstant.PASSWORD_ERROR);
         }
-        
-        // 5. 检查管理员状态
-        if (admin.getStatus() != null && admin.getStatus() == 0) {
-            log.warn("管理员登录失败，账号已被禁用：{}", loginDTO.getUsername());
-            throw new BusinessException("账号已被禁用，请联系管理员");
+
+        //账号被锁定
+        if(admin.getStatus() == StatusConstant.DISABLE){
+            throw new AccountLockedException(MessageConstant.ACCOUNT_LOCKED);
         }
-        
-        // 6. 生成Token
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("adminId", admin.getId());
-        claims.put("username", admin.getUsername());
-        String token = JwtUtil.generateToken(claims);
-        
-        // 7. 构建响应
-        AdminLoginVO loginVO = new AdminLoginVO();
-        loginVO.setToken(token);
-        
-        AdminLoginVO.AdminInfoVO adminInfoVO = new AdminLoginVO.AdminInfoVO();
-        adminInfoVO.setId(admin.getId());
-        adminInfoVO.setUsername(admin.getUsername());
-        adminInfoVO.setName(admin.getName());
-        adminInfoVO.setPhone(admin.getPhone());
-        adminInfoVO.setAvatar(admin.getAvatar());
-        loginVO.setAdminInfo(adminInfoVO);
-        
-        log.info("管理员登录成功，ID：{}，用户名：{}", admin.getId(), admin.getUsername());
-        return loginVO;
+
+        return admin;
     }
     
     @Override
