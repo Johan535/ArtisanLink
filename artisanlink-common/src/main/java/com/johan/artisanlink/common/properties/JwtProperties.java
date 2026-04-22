@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 // jwt配置类
 @Component
-@ConfigurationProperties(prefix = "sky.jwt")
+@ConfigurationProperties(prefix = "artisanlink.jwt")
 @Data
 public class JwtProperties {
 
