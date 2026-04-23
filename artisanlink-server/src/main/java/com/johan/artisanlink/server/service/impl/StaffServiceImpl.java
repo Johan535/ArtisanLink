@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor // 自动注入
 public class StaffServiceImpl implements StaffService {
 
     @Autowired

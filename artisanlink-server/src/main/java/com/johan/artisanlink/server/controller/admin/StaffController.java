@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * 员工管理模块
  */
 @Slf4j
-@RestController("adminMerchantController")
+@RestController("adminStaffController")
 @RequestMapping("admin/staff")
 public class StaffController {
     @Autowired

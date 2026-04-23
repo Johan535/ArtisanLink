@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, reactive } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import { adminApi } from '../api'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import wsClient from '@/utils/websocket'
 
 const statusMap = {
   0: '待接单',
@@ -24,6 +26,10 @@ const state = reactive({
   }
 })
 
+// 未处理订单数
+const pendingCount = ref(0)
+
+// 加载订单列表
 async function fetchList() {
   state.loading = true
   try {
@@ -34,12 +40,115 @@ async function fetchList() {
     const data = res.data || {}
     state.list = data.records || data.list || []
     state.total = data.total || state.list.length
+    
+    // 统计待接单数量
+    pendingCount.value = state.list.filter(o => o.orderStatus === 0).length
+  } catch (error) {
+    console.error('加载订单失败:', error)
+    ElMessage.error('加载订单失败')
   } finally {
     state.loading = false
   }
 }
 
-onMounted(fetchList)
+// 接单
+async function acceptOrder(orderId) {
+  try {
+    await ElMessageBox.confirm('确定要接此订单吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'info'
+    })
+    
+    const res = await adminApi.acceptOrder(orderId)
+    if (res.code === 200) {
+      ElMessage.success('接单成功')
+      await fetchList()
+    } else {
+      ElMessage.error(res.msg || '接单失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('接单失败:', error)
+      ElMessage.error('接单失败')
+    }
+  }
+}
+
+// 拒绝订单
+async function rejectOrder(orderId) {
+  try {
+    const { value: reason } = await ElMessageBox.prompt('请输入拒绝原因', '拒绝订单', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      inputPattern: /.+/,
+      inputErrorMessage: '请输入拒绝原因'
+    })
+    
+    const res = await adminApi.rejectOrder(orderId, reason)
+    if (res.code === 200) {
+      ElMessage.success('已拒绝订单')
+      await fetchList()
+    } else {
+      ElMessage.error(res.msg || '操作失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('拒绝订单失败:', error)
+      ElMessage.error('操作失败')
+    }
+  }
+}
+
+// 完成订单
+async function completeOrder(orderId) {
+  try {
+    await ElMessageBox.confirm('确定标记此订单为已完成吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'success'
+    })
+    
+    const res = await adminApi.completeOrder(orderId)
+    if (res.code === 200) {
+      ElMessage.success('订单已完成')
+      await fetchList()
+    } else {
+      ElMessage.error(res.msg || '操作失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('完成订单失败:', error)
+      ElMessage.error('操作失败')
+    }
+  }
+}
+
+// WebSocket订单通知处理
+function handleNewOrder(data) {
+  ElMessage.warning(`收到新订单：${data.orderNo}`)
+  pendingCount.value++
+  // 如果当前在待接单标签页，刷新列表
+  if (state.query.orderStatus === '' || state.query.orderStatus === '0') {
+    fetchList()
+  }
+}
+
+onMounted(async () => {
+  await fetchList()
+  
+  // 连接WebSocket接收订单通知
+  wsClient.connect()
+  wsClient.on('new_order', handleNewOrder)
+  wsClient.on('order_status_change', () => {
+    fetchList()
+  })
+})
+
+onUnmounted(() => {
+  wsClient.off('new_order', handleNewOrder)
+  wsClient.off('order_status_change')
+})
 </script>
 
 <template>
@@ -48,41 +157,74 @@ onMounted(fetchList)
       <h2>订单管理</h2>
     </div>
     <div class="toolbar">
-      <input v-model="state.query.orderNo" placeholder="订单号" />
-      <input v-model="state.query.customerPhone" placeholder="客户手机号" />
-      <select v-model="state.query.orderStatus">
-        <option value="">全部状态</option>
-        <option value="0">待接单</option>
-        <option value="1">已接单</option>
-        <option value="2">已完成</option>
-        <option value="3">已取消</option>
-      </select>
-      <button class="btn btn-primary" @click="fetchList">查询</button>
+      <el-input v-model="state.query.orderNo" placeholder="订单号" clearable style="width: 200px" />
+      <el-input v-model="state.query.customerPhone" placeholder="客户手机号" clearable style="width: 200px" />
+      <el-select v-model="state.query.orderStatus" placeholder="状态" clearable style="width: 150px">
+        <el-option label="全部状态" value="" />
+        <el-option label="待接单" :value="0" />
+        <el-option label="已接单" :value="1" />
+        <el-option label="已完成" :value="2" />
+        <el-option label="已取消" :value="3" />
+      </el-select>
+      <el-button type="primary" @click="fetchList">查询</el-button>
+      
+      <!-- 待接单提醒 -->
+      <el-badge v-if="pendingCount > 0" :value="pendingCount" class="pending-badge">
+        <el-tag type="warning">待处理订单</el-tag>
+      </el-badge>
     </div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>订单号</th>
-          <th>客户</th>
-          <th>服务</th>
-          <th>技师</th>
-          <th>状态</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="state.loading"><td colspan="6">加载中...</td></tr>
-        <tr v-else-if="state.list.length === 0"><td colspan="6">暂无数据</td></tr>
-        <tr v-for="item in state.list" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.orderNo }}</td>
-          <td>{{ item.customerName || item.customerPhone || '-' }}</td>
-          <td>{{ item.serviceName || '-' }}</td>
-          <td>{{ item.staffName || item.techName || '-' }}</td>
-          <td>{{ statusMap[item.orderStatus] || '未知状态' }}</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="total">共 {{ state.total }} 条</p>
+    
+    <el-table :data="state.list" v-loading="state.loading" border stripe>
+      <el-table-column prop="id" label="ID" width="80" />
+      <el-table-column prop="orderNo" label="订单号" width="180" />
+      <el-table-column label="客户信息" width="150">
+        <template #default="{ row }">
+          <div>{{ row.customerName || '-' }}</div>
+          <div style="font-size: 12px; color: #999;">{{ row.customerPhone }}</div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="serviceName" label="服务项目" width="150" />
+      <el-table-column prop="staffName" label="技师" width="120" />
+      <el-table-column prop="appointmentTime" label="预约时间" width="160" />
+      <el-table-column prop="amount" label="金额" width="100">
+        <template #default="{ row }">
+          <span style="color: #d4a574; font-weight: 600;">¥{{ row.amount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <el-tag :type="row.orderStatus === 0 ? 'warning' : row.orderStatus === 1 ? 'primary' : row.orderStatus === 2 ? 'success' : 'info'">
+            {{ statusMap[row.orderStatus] || '未知' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="220" fixed="right">
+        <template #default="{ row }">
+          <!-- 待接单状态 -->
+          <template v-if="row.orderStatus === 0">
+            <el-button size="small" type="success" @click="acceptOrder(row.id)">接单</el-button>
+            <el-button size="small" type="danger" @click="rejectOrder(row.id)">拒绝</el-button>
+          </template>
+          
+          <!-- 已接单状态 -->
+          <template v-else-if="row.orderStatus === 1">
+            <el-button size="small" type="primary" @click="completeOrder(row.id)">完成</el-button>
+          </template>
+          
+          <!-- 其他状态 -->
+          <el-button v-else size="small" disabled>无操作</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+    
+    <div class="pagination">
+      <el-pagination
+        v-model:current-page="state.query.pageNum"
+        v-model:page-size="state.query.pageSize"
+        :total="state.total"
+        layout="total, prev, pager, next, jumper"
+        @current-change="fetchList"
+      />
+    </div>
   </AdminLayout>
 </template>

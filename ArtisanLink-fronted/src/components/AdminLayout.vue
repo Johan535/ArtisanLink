@@ -1,11 +1,24 @@
 <script setup>
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { Bell, User, Setting, Document, DataAnalysis, Calendar, Shop, Service, Tickets, Message } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import { adminApi } from '@/api/index'
+import { useWebSocket } from '@/utils/websocket'
+import { wsHandler } from '@/utils/wsHandler'
+import NotificationBell from './NotificationBell.vue'
 import { adminApi } from '../api'
 import { clearAdminInfo, clearToken, getAdminInfo } from '../utils/auth'
 
 const route = useRoute()
 const router = useRouter()
+
+// WebSocket实例
+const wsInstance = useWebSocket()
+
+// 状态
+const activeMenu = computed(() => route.path)
+const unreadMessageCount = ref(0)
 
 const menus = [
   { label: '数据看板', path: '/dashboard' },
@@ -34,6 +47,49 @@ async function logout() {
     router.push('/login')
   }
 }
+
+/**
+ * 处理WebSocket新消息
+ */
+function handleNewMessage(data) {
+  unreadMessageCount.value++
+  
+  // 显示通知
+  ElMessage({
+    message: data.title || '收到新消息',
+    type: 'info',
+    duration: 3000
+  })
+}
+
+/**
+ * 加载未读消息数
+ */
+async function loadUnreadMessageCount() {
+  try {
+    const res = await adminApi.getMessageList({ page: 1, pageSize: 1, isRead: false })
+    if (res.code === 200) {
+      unreadMessageCount.value = res.data?.total || 0
+    }
+  } catch (error) {
+    console.error('加载未读消息数失败:', error)
+  }
+}
+
+onMounted(() => {
+  // 加载未读消息数
+  loadUnreadMessageCount()
+  
+  // 注册WebSocket消息处理器
+  wsHandler.on('message', handleNewMessage)
+  wsHandler.on('order_notification', handleNewMessage)
+})
+
+onUnmounted(() => {
+  // 移除WebSocket消息处理器
+  wsHandler.off('message', handleNewMessage)
+  wsHandler.off('order_notification', handleNewMessage)
+})
 </script>
 
 <template>
@@ -50,6 +106,11 @@ async function logout() {
         >
           {{ item.label }}
         </button>
+        <el-menu-item index="/admin/message">
+          <el-icon><Bell /></el-icon>
+          <template #title>消息中心</template>
+          <el-badge v-if="unreadMessageCount > 0" :value="unreadMessageCount" class="menu-badge" />
+        </el-menu-item>
       </nav>
     </aside>
 
