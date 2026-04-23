@@ -7,6 +7,7 @@ import com.johan.artisanlink.pojo.dto.AdminLoginDTO;
 import com.johan.artisanlink.pojo.po.Admin;
 import com.johan.artisanlink.server.mapper.AdminMapper;
 import com.johan.artisanlink.server.service.AdminService;
+import com.johan.artisanlink.server.service.VerifyCodeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,8 @@ public class AdminServiceImpl implements AdminService {
 
     @Autowired
     private AdminMapper adminMapper;
+    @Autowired
+    private VerifyCodeService verifyCodeService;
 
     // 密码加密
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -46,7 +49,8 @@ public class AdminServiceImpl implements AdminService {
             throw new BusinessException("密码不能为空");
         }
         
-        // 2.TODO: 验证码校验（后续实现）
+        // 2. 验证码校验
+        verifyCodeService.validateAdminCaptcha(loginDTO.getCaptchaKey(), loginDTO.getCaptcha());
         
         // 3. 根据用户名查询数据库中的数据
         Admin admin = adminMapper.getByUsername(loginDTO.getUsername());

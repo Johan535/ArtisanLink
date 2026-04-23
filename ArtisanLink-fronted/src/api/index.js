@@ -13,6 +13,9 @@ export const adminApi = {
   login(data) {
     return post('/admin/login', data)
   },
+  getCaptcha() {
+    return get('/admin/captcha')
+  },
   logout() {
     return post('/admin/logout')
   },

@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminApi, customerApi } from '../../api'
 import { setAdminInfo, setToken, setUserInfo } from '../../utils/auth'
@@ -164,10 +164,14 @@ function validatePhone(phone) {
 async function refreshCaptcha(type) {
   captchaLoading[type] = true
   try {
-    // TODO: 调用后端获取验证码接口
-    // const res = await adminApi.getCaptcha()
-    // merchantForm.captchaKey = res.data.key
-    ElMessage.info('验证码功能待实现')
+    const res = await adminApi.getCaptcha()
+    merchantForm.captchaKey = res.data?.key || ''
+    merchantForm.captcha = ''
+    if (res.data?.code) {
+      ElMessage.success(`验证码：${res.data.code}`)
+    } else {
+      ElMessage.success('验证码已刷新')
+    }
   } catch (error) {
     ElMessage.error('获取验证码失败')
   } finally {
@@ -184,9 +188,12 @@ async function sendSmsCode() {
   
   smsLoading.value = true
   try {
-    // TODO: 调用后端发送短信验证码接口
-    // await customerApi.sendSmsCode(customerForm.phone)
-    ElMessage.success('验证码已发送（模拟）')
+    const res = await customerApi.sendSmsCode(customerForm.phone)
+    if (res.data?.code) {
+      ElMessage.success(`短信验证码：${res.data.code}`)
+    } else {
+      ElMessage.success('验证码已发送')
+    }
   } catch (error) {
     ElMessage.error('发送验证码失败')
   } finally {
@@ -198,8 +205,8 @@ async function sendSmsCode() {
 async function handleMerchantLogin() {
   errorMsg.value = ''
   
-  if (!merchantForm.username || !merchantForm.password) {
-    errorMsg.value = '请输入用户名和密码'
+  if (!merchantForm.username || !merchantForm.password || !merchantForm.captcha) {
+    errorMsg.value = '请输入用户名、密码和验证码'
     return
   }
   
@@ -248,24 +255,18 @@ async function handleCustomerLogin() {
   
   loading.customer = true
   try {
-    // TODO: 调用后端用户登录接口
-    // const res = await customerApi.loginWithCode(customerForm.phone, customerForm.code)
-    
-    // 模拟登录成功
-    const mockData = {
-      token: 'mock_customer_token_' + Date.now(),
-      userInfo: {
-        id: Date.now(),
-        phone: customerForm.phone,
-        nickname: '用户' + customerForm.phone.slice(-4),
-        avatar: '',
-        role: 'customer',
-        type: 'customer'
-      }
+    const res = await customerApi.loginWithCode(customerForm.phone, customerForm.code)
+    const token = res.data?.token
+    if (!token) {
+      throw new Error('登录失败，未返回token')
     }
-    
-    setToken(mockData.token)
-    setUserInfo(mockData.userInfo)
+    setToken(token)
+    setUserInfo({
+      phone: customerForm.phone,
+      nickname: `用户${customerForm.phone.slice(-4)}`,
+      role: 'customer',
+      type: 'customer'
+    })
     
     ElMessage.success('登录成功')
     router.push('/customer/home')
@@ -276,6 +277,10 @@ async function handleCustomerLogin() {
     loading.customer = false
   }
 }
+
+onMounted(() => {
+  refreshCaptcha('merchant')
+})
 </script>
 
 <style scoped>

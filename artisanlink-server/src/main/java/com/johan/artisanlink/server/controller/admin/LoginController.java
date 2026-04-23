@@ -8,7 +8,9 @@ import com.johan.artisanlink.common.util.JwtUtil;
 import com.johan.artisanlink.pojo.dto.AdminLoginDTO;
 import com.johan.artisanlink.pojo.po.Admin;
 import com.johan.artisanlink.pojo.vo.AdminLoginVO;
+import com.johan.artisanlink.pojo.vo.CaptchaVO;
 import com.johan.artisanlink.server.service.AdminService;
+import com.johan.artisanlink.server.service.VerifyCodeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +29,13 @@ public class LoginController {
     private AdminService adminService;
     @Autowired
     private JwtProperties jwtProperties;
+    @Autowired
+    private VerifyCodeService verifyCodeService;
+
+    @GetMapping("/captcha")
+    public Result<CaptchaVO> getCaptcha() {
+        return Result.success(verifyCodeService.generateAdminCaptcha());
+    }
 
     //登录
     @PostMapping("/login")
