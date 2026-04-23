@@ -7,7 +7,6 @@ import com.johan.artisanlink.pojo.dto.MerchantUpdateDTO;
 import com.johan.artisanlink.pojo.po.Merchant;
 import com.johan.artisanlink.server.service.MerchantService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.message.ReusableMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -66,6 +65,13 @@ public class MerchantController {
     public Result updateCurrentInfo(@RequestBody MerchantUpdateDTO merchantUpdateDTO) {
         log.info("更新当前商户信息: {}", merchantUpdateDTO);
         merchantService.updateCurrentMerchantInfo(merchantUpdateDTO);
+        return Result.success();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteById(@PathVariable Long id) {
+        log.info("删除商户: {}", id);
+        merchantService.deleteById(id);
         return Result.success();
     }
 }

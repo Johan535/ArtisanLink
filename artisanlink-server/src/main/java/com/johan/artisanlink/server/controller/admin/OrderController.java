@@ -73,4 +73,22 @@ public class OrderController {
         orderService.complete(id);
         return Result.success();
     }
+
+    @PostMapping("/save")
+    public Result save(@RequestBody Orders orders) {
+        orderService.save(orders);
+        return Result.success();
+    }
+
+    @PutMapping("/update")
+    public Result update(@RequestBody Orders orders) {
+        orderService.update(orders);
+        return Result.success();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteById(@PathVariable Long id) {
+        orderService.deleteById(id);
+        return Result.success();
+    }
 }

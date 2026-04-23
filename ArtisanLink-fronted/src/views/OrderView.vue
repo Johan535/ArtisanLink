@@ -28,6 +28,20 @@ const state = reactive({
 
 // 未处理订单数
 const pendingCount = ref(0)
+const dialogVisible = ref(false)
+const isEdit = ref(false)
+const orderForm = reactive({
+  id: null,
+  merchantId: 1,
+  orderNo: '',
+  customerName: '',
+  customerPhone: '',
+  serviceName: '',
+  staffName: '',
+  amount: 0,
+  orderStatus: 0,
+  remark: ''
+})
 
 // 加载订单列表
 async function fetchList() {
@@ -48,6 +62,61 @@ async function fetchList() {
     ElMessage.error('加载订单失败')
   } finally {
     state.loading = false
+  }
+}
+
+function openAddDialog() {
+  isEdit.value = false
+  Object.assign(orderForm, {
+    id: null,
+    merchantId: 1,
+    orderNo: '',
+    customerName: '',
+    customerPhone: '',
+    serviceName: '',
+    staffName: '',
+    amount: 0,
+    orderStatus: 0,
+    remark: ''
+  })
+  dialogVisible.value = true
+}
+
+function openEditDialog(row) {
+  isEdit.value = true
+  Object.assign(orderForm, row)
+  dialogVisible.value = true
+}
+
+async function submitOrderForm() {
+  if (!orderForm.orderNo?.trim()) return ElMessage.warning('请输入订单号')
+  try {
+    const payload = { ...orderForm }
+    const res = isEdit.value ? await adminApi.updateOrder(payload) : await adminApi.saveOrder(payload)
+    if (res.code === 200) {
+      ElMessage.success(isEdit.value ? '更新成功' : '新增成功')
+      dialogVisible.value = false
+      await fetchList()
+    } else {
+      ElMessage.error(res.msg || '操作失败')
+    }
+  } catch (e) {
+    ElMessage.error(e.message || '操作失败')
+  }
+}
+
+async function deleteOrder(id) {
+  try {
+    await ElMessageBox.confirm('确定删除该订单吗？', '提示', { type: 'warning' })
+    const res = await adminApi.deleteOrder(id)
+    if (res.code === 200) {
+      ElMessage.success('删除成功')
+      await fetchList()
+    } else {
+      ElMessage.error(res.msg || '删除失败')
+    }
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('删除失败')
   }
 }
 
@@ -167,6 +236,7 @@ onUnmounted(() => {
         <el-option label="已取消" :value="3" />
       </el-select>
       <el-button type="primary" @click="fetchList">查询</el-button>
+      <el-button type="success" @click="openAddDialog">新增订单</el-button>
       
       <!-- 待接单提醒 -->
       <el-badge v-if="pendingCount > 0" :value="pendingCount" class="pending-badge">
@@ -212,7 +282,8 @@ onUnmounted(() => {
           </template>
           
           <!-- 其他状态 -->
-          <el-button v-else size="small" disabled>无操作</el-button>
+          <el-button v-else size="small" @click="openEditDialog(row)">编辑</el-button>
+          <el-button size="small" type="danger" @click="deleteOrder(row.id)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -226,5 +297,29 @@ onUnmounted(() => {
         @current-change="fetchList"
       />
     </div>
+
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑订单' : '新增订单'" width="640px">
+      <el-form :model="orderForm" label-width="100px">
+        <el-form-item label="订单号"><el-input v-model="orderForm.orderNo" /></el-form-item>
+        <el-form-item label="客户姓名"><el-input v-model="orderForm.customerName" /></el-form-item>
+        <el-form-item label="客户手机号"><el-input v-model="orderForm.customerPhone" /></el-form-item>
+        <el-form-item label="服务名称"><el-input v-model="orderForm.serviceName" /></el-form-item>
+        <el-form-item label="技师姓名"><el-input v-model="orderForm.staffName" /></el-form-item>
+        <el-form-item label="金额"><el-input-number v-model="orderForm.amount" :min="0" :precision="2" /></el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="orderForm.orderStatus" style="width: 100%">
+            <el-option label="待接单" :value="0" />
+            <el-option label="已接单" :value="1" />
+            <el-option label="已完成" :value="2" />
+            <el-option label="已取消" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注"><el-input v-model="orderForm.remark" type="textarea" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitOrderForm">保存</el-button>
+      </template>
+    </el-dialog>
   </AdminLayout>
 </template>

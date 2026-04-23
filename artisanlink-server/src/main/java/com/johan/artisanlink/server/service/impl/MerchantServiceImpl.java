@@ -104,4 +104,13 @@ public class MerchantServiceImpl implements MerchantService {
         updateDTO.setId(current.getId());
         update(updateDTO);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        Merchant merchant = merchantMapper.selectById(id);
+        if (merchant == null) {
+            throw new BusinessException("商户不存在");
+        }
+        merchantMapper.deleteById(id);
+    }
 }

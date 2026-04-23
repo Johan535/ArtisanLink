@@ -37,4 +37,10 @@ public interface OrderService {
      * 完成订单
      */
     void complete(Long id);
+
+    void save(Orders orders);
+
+    void update(Orders orders);
+
+    void deleteById(Long id);
 }

@@ -89,4 +89,24 @@ public class OrderServiceImpl implements OrderService {
         orders.setUpdateTime(LocalDateTime.now());
         ordersMapper.updateById(orders);
     }
+
+    @Override
+    public void save(Orders orders) {
+        ordersMapper.insert(orders);
+    }
+
+    @Override
+    public void update(Orders orders) {
+        if (orders.getId() == null) {
+            throw new BusinessException("订单ID不能为空");
+        }
+        getById(orders.getId());
+        ordersMapper.updateById(orders);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        getById(id);
+        ordersMapper.deleteById(id);
+    }
 }

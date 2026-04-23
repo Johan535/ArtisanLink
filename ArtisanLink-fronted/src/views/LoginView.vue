@@ -43,8 +43,12 @@
                   />
                 </el-col>
                 <el-col :span="8">
-                  <el-button @click="refreshCaptcha('merchant')" :loading="captchaLoading.merchant">
-                    获取验证码
+                  <el-button
+                    @click="refreshCaptcha('merchant')"
+                    :loading="captchaLoading.merchant"
+                    :disabled="captchaCountdown > 0"
+                  >
+                    {{ captchaCountdown > 0 ? `${captchaCountdown}s后重试` : '获取验证码' }}
                   </el-button>
                 </el-col>
               </el-row>
@@ -85,8 +89,8 @@
                   />
                 </el-col>
                 <el-col :span="8">
-                  <el-button @click="sendSmsCode" :loading="smsLoading">
-                    发送验证码
+                  <el-button @click="sendSmsCode" :loading="smsLoading" :disabled="smsCountdown > 0">
+                    {{ smsCountdown > 0 ? `${smsCountdown}s后重试` : '发送验证码' }}
                   </el-button>
                 </el-col>
               </el-row>
@@ -114,7 +118,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue'
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { adminApi, customerApi } from '../api'
 import { setAdminInfo, setToken, setUserInfo } from '../utils/auth'
@@ -140,6 +144,10 @@ const captchaLoading = reactive({
 })
 
 const smsLoading = ref(false)
+const smsCountdown = ref(0)
+const captchaCountdown = ref(0)
+let smsTimer = null
+let captchaTimer = null
 
 // 店长登录表单
 const merchantForm = reactive({
@@ -160,6 +168,30 @@ function validatePhone(phone) {
   return /^1[3-9]\d{9}$/.test(phone)
 }
 
+function startCountdown(type, seconds = 60) {
+  const target = type === 'sms' ? smsCountdown : captchaCountdown
+  const timerKey = type === 'sms' ? 'sms' : 'captcha'
+  target.value = seconds
+  const timer = setInterval(() => {
+    target.value -= 1
+    if (target.value <= 0) {
+      clearInterval(timer)
+      if (timerKey === 'sms') {
+        smsTimer = null
+      } else {
+        captchaTimer = null
+      }
+    }
+  }, 1000)
+  if (timerKey === 'sms') {
+    if (smsTimer) clearInterval(smsTimer)
+    smsTimer = timer
+  } else {
+    if (captchaTimer) clearInterval(captchaTimer)
+    captchaTimer = timer
+  }
+}
+
 // 获取验证码（店长）
 async function refreshCaptcha(type) {
   captchaLoading[type] = true
@@ -172,8 +204,9 @@ async function refreshCaptcha(type) {
     } else {
       ElMessage.success('验证码已刷新')
     }
+    startCountdown('captcha')
   } catch (error) {
-    ElMessage.error('获取验证码失败')
+    ElMessage.error(error.message || '获取验证码失败')
   } finally {
     captchaLoading[type] = false
   }
@@ -185,6 +218,7 @@ async function sendSmsCode() {
     ElMessage.warning('请输入正确的手机号')
     return
   }
+  if (smsCountdown.value > 0) return
   
   smsLoading.value = true
   try {
@@ -194,8 +228,9 @@ async function sendSmsCode() {
     } else {
       ElMessage.success('验证码已发送')
     }
+    startCountdown('sms')
   } catch (error) {
-    ElMessage.error('发送验证码失败')
+    ElMessage.error(error.message || '发送验证码失败')
   } finally {
     smsLoading.value = false
   }
@@ -280,6 +315,11 @@ async function handleCustomerLogin() {
 
 onMounted(() => {
   refreshCaptcha('merchant')
+})
+
+onBeforeUnmount(() => {
+  if (smsTimer) clearInterval(smsTimer)
+  if (captchaTimer) clearInterval(captchaTimer)
 })
 </script>
 

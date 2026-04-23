@@ -2,6 +2,7 @@ package com.johan.artisanlink.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.johan.artisanlink.common.exception.BusinessException;
 import com.johan.artisanlink.pojo.dto.CustomerQueryDTO;
 import com.johan.artisanlink.pojo.po.Customer;
 import com.johan.artisanlink.server.mapper.CustomerMapper;
@@ -39,5 +40,34 @@ public class CustomerServiceImpl implements CustomerService {
         
         // 执行分页查询
         return customerMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public Customer getById(Long id) {
+        Customer customer = customerMapper.selectById(id);
+        if (customer == null) {
+            throw new BusinessException("客户不存在");
+        }
+        return customer;
+    }
+
+    @Override
+    public void save(Customer customer) {
+        customerMapper.insert(customer);
+    }
+
+    @Override
+    public void update(Customer customer) {
+        if (customer.getId() == null) {
+            throw new BusinessException("客户ID不能为空");
+        }
+        getById(customer.getId());
+        customerMapper.updateById(customer);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        getById(id);
+        customerMapper.deleteById(id);
     }
 }

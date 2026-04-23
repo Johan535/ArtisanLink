@@ -29,4 +29,27 @@ public class CustomerController {
         Page<Customer> page = customerService.pageQuery(queryDTO);
         return Result.success(page);
     }
+
+    @GetMapping("/{id}")
+    public Result<Customer> getById(@PathVariable Long id) {
+        return Result.success(customerService.getById(id));
+    }
+
+    @PostMapping("/save")
+    public Result save(@RequestBody Customer customer) {
+        customerService.save(customer);
+        return Result.success();
+    }
+
+    @PutMapping("/update")
+    public Result update(@RequestBody Customer customer) {
+        customerService.update(customer);
+        return Result.success();
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteById(@PathVariable Long id) {
+        customerService.deleteById(id);
+        return Result.success();
+    }
 }

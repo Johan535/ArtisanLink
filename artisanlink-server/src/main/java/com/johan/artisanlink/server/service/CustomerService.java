@@ -15,4 +15,12 @@ public interface CustomerService {
      * @return 分页结果
      */
     Page<Customer> pageQuery(CustomerQueryDTO queryDTO);
+
+    Customer getById(Long id);
+
+    void save(Customer customer);
+
+    void update(Customer customer);
+
+    void deleteById(Long id);
 }

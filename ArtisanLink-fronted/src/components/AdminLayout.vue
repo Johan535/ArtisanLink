@@ -20,13 +20,14 @@ const activeMenu = computed(() => route.path)
 const unreadMessageCount = ref(0)
 
 const menus = [
-  { label: '数据看板', path: '/dashboard' },
-  { label: '商户管理', path: '/merchants' },
-  { label: '员工管理', path: '/staff' },
-  { label: '服务管理', path: '/services' },
-  { label: '订单管理', path: '/orders' },
-  { label: '客户管理', path: '/customers' },
-  { label: '经营统计', path: '/statistics' }
+  { label: '数据看板', path: '/admin/dashboard' },
+  { label: '商户管理', path: '/admin/merchant' },
+  { label: '员工管理', path: '/admin/staff' },
+  { label: '服务管理', path: '/admin/service' },
+  { label: '订单管理', path: '/admin/order' },
+  { label: '客户管理', path: '/admin/customer' },
+  { label: '经营统计', path: '/admin/statistics' },
+  { label: '消息中心', path: '/admin/message' }
 ]
 
 const adminName = computed(() => getAdminInfo()?.username || '管理员')
@@ -105,11 +106,6 @@ onUnmounted(() => {
         >
           {{ item.label }}
         </button>
-        <el-menu-item index="/admin/message">
-          <el-icon><Bell /></el-icon>
-          <template #title>消息中心</template>
-          <el-badge v-if="unreadMessageCount > 0" :value="unreadMessageCount" class="menu-badge" />
-        </el-menu-item>
       </nav>
     </aside>
 

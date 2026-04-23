@@ -30,6 +30,15 @@ export const adminApi = {
   getMerchants(params) {
     return get('/admin/merchant/list', params)
   },
+  saveMerchant(data) {
+    return post('/admin/merchant/save', data)
+  },
+  updateMerchant(data) {
+    return put('/admin/merchant/update', data)
+  },
+  deleteMerchant(id) {
+    return del(`/admin/merchant/${id}`)
+  },
 
   // 员工
   getStaffList(params) {
@@ -93,6 +102,15 @@ export const adminApi = {
   getOrderList(params) {
     return get('/admin/order/list', params)
   },
+  saveOrder(data) {
+    return post('/admin/order/save', data)
+  },
+  updateOrder(data) {
+    return put('/admin/order/update', data)
+  },
+  deleteOrder(id) {
+    return del(`/admin/order/${id}`)
+  },
   getOrderDetail(id) {
     return get(`/admin/order/${id}`)
   },
@@ -109,6 +127,15 @@ export const adminApi = {
   // 客户
   getCustomerList(params) {
     return get('/admin/customer/list', params)
+  },
+  saveCustomer(data) {
+    return post('/admin/customer/save', data)
+  },
+  updateCustomer(data) {
+    return put('/admin/customer/update', data)
+  },
+  deleteCustomer(id) {
+    return del(`/admin/customer/${id}`)
   },
 
   // 统计

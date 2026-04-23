@@ -48,4 +48,9 @@ public interface MerchantService {
      * 更新当前商户信息
      */
     void updateCurrentMerchantInfo(MerchantUpdateDTO updateDTO);
+
+    /**
+     * 删除商户
+     */
+    void deleteById(Long id);
 }

@@ -11,7 +11,6 @@ import OrderDetailView from '../views/customer/OrderDetailView.vue'
 import ProfileView from '../views/customer/ProfileView.vue'
 import MessageView from '../views/customer/MessageView.vue'
 import { getToken, getUserInfo } from '@/utils/auth'
-import AdminLayout from '../components/AdminLayout.vue'
 
 const routes = [
   {
@@ -26,66 +25,58 @@ const routes = [
   },
   // B端管理端路由
   {
-    path: '/admin',
-    name: 'AdminLayout',
-    component: () => import('../components/AdminLayout.vue'),
-    meta: { requiresAuth: true, role: 'merchant' },
-    children: [
-      {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: () => import('../views/DashboardView.vue'),
-        meta: { title: '数据看板' }
-      },
-      {
-        path: 'staff',
-        name: 'Staff',
-        component: () => import('../views/StaffView.vue'),
-        meta: { title: '员工管理' }
-      },
-      {
-        path: 'schedule',
-        name: 'Schedule',
-        component: () => import('../views/ScheduleView.vue'),
-        meta: { title: '排班管理' }
-      },
-      {
-        path: 'service',
-        name: 'Service',
-        component: () => import('../views/ServiceView.vue'),
-        meta: { title: '服务管理' }
-      },
-      {
-        path: 'order',
-        name: 'Order',
-        component: () => import('../views/OrderView.vue'),
-        meta: { title: '订单管理' }
-      },
-      {
-        path: 'customer',
-        name: 'Customer',
-        component: () => import('../views/CustomerView.vue'),
-        meta: { title: '客户管理' }
-      },
-      {
-        path: 'statistics',
-        name: 'Statistics',
-        component: () => import('../views/StatisticsView.vue'),
-        meta: { title: '数据统计' }
-      },
-      {
-        path: 'message',
-        name: 'Message',
-        component: () => import('../views/MessageView.vue'),
-        meta: { title: '消息中心' }
-      },
-      {
-        path: 'merchant',
-        name: 'Merchant',
-        component: () => import('../views/MerchantView.vue'),
-        meta: { title: '商户管理' }
-      }
-    ]
+    path: '/admin/dashboard',
+    name: 'Dashboard',
+    component: () => import('../views/DashboardView.vue'),
+    meta: { title: '数据看板', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/staff',
+    name: 'Staff',
+    component: () => import('../views/StaffView.vue'),
+    meta: { title: '员工管理', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/schedule',
+    name: 'Schedule',
+    component: () => import('../views/ScheduleView.vue'),
+    meta: { title: '排班管理', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/service',
+    name: 'Service',
+    component: () => import('../views/ServiceView.vue'),
+    meta: { title: '服务管理', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/order',
+    name: 'Order',
+    component: () => import('../views/OrderView.vue'),
+    meta: { title: '订单管理', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/customer',
+    name: 'Customer',
+    component: () => import('../views/CustomerView.vue'),
+    meta: { title: '客户管理', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/statistics',
+    name: 'Statistics',
+    component: () => import('../views/StatisticsView.vue'),
+    meta: { title: '数据统计', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/message',
+    name: 'Message',
+    component: () => import('../views/MessageView.vue'),
+    meta: { title: '消息中心', requiresAuth: true, role: 'merchant' }
+  },
+  {
+    path: '/admin/merchant',
+    name: 'Merchant',
+    component: () => import('../views/MerchantView.vue'),
+    meta: { title: '商户管理', requiresAuth: true, role: 'merchant' }
   },
   // C端用户端路由
   {
