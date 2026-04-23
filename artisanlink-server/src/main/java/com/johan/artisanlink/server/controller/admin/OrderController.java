@@ -20,6 +20,18 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
+    public static class RejectOrderRequest {
+        private String reason;
+
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+    }
+
     /**
      * 订单列表查询
      */
@@ -38,5 +50,27 @@ public class OrderController {
         log.info("查询订单详情，ID: {}", id);
         Orders orders = orderService.getById(id);
         return Result.success(orders);
+    }
+
+    @PostMapping("/{id}/accept")
+    public Result accept(@PathVariable Long id) {
+        log.info("接单，ID: {}", id);
+        orderService.accept(id);
+        return Result.success();
+    }
+
+    @PostMapping("/{id}/reject")
+    public Result reject(@PathVariable Long id, @RequestBody(required = false) RejectOrderRequest request) {
+        String reason = request == null ? null : request.getReason();
+        log.info("拒单，ID: {}, reason: {}", id, reason);
+        orderService.reject(id, reason);
+        return Result.success();
+    }
+
+    @PostMapping("/{id}/complete")
+    public Result complete(@PathVariable Long id) {
+        log.info("完成订单，ID: {}", id);
+        orderService.complete(id);
+        return Result.success();
     }
 }

@@ -53,6 +53,14 @@ public class ServiceController {
         return Result.success();
     }
 
+    @PutMapping("/{id}")
+    public Result updateById(@PathVariable Long id, @RequestBody com.johan.artisanlink.pojo.po.Service service) {
+        service.setId(id);
+        log.info("修改服务(REST): {}", service);
+        serviceManagementService.update(service);
+        return Result.success();
+    }
+
     /**
      * 服务详情查询
      */
@@ -61,6 +69,13 @@ public class ServiceController {
         log.info("查询服务详情，ID: {}", id);
         com.johan.artisanlink.pojo.po.Service service = serviceManagementService.getById(id);
         return Result.success(service);
+    }
+
+    @DeleteMapping("/{id}")
+    public Result deleteById(@PathVariable Long id) {
+        log.info("删除服务，ID: {}", id);
+        serviceManagementService.delete(id);
+        return Result.success();
     }
 
     /**

@@ -22,4 +22,19 @@ public interface OrderService {
      * @return 订单信息
      */
     Orders getById(Long id);
+
+    /**
+     * 接单
+     */
+    void accept(Long id);
+
+    /**
+     * 拒单
+     */
+    void reject(Long id, String reason);
+
+    /**
+     * 完成订单
+     */
+    void complete(Long id);
 }

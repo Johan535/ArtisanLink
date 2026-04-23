@@ -1,7 +1,8 @@
 package com.johan.artisanlink.server.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.johan.artisanlink.common.exception.BusinessException;
 import com.johan.artisanlink.common.constant.StatusConstant;
 import com.johan.artisanlink.common.result.PageResult;
 import com.johan.artisanlink.pojo.dto.StaffSaveDTO;
@@ -14,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 
 /**
@@ -26,12 +28,20 @@ public class StaffServiceImpl implements StaffService {
 
     @Autowired
     private StaffMapper staffMapper;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     //新增员工
     @Override
     public void save(StaffSaveDTO staffSaveDTO) {
         Staff staff = new Staff();
         BeanUtils.copyProperties(staffSaveDTO, staff);
+        if (staffSaveDTO.getSkillTags() != null) {
+            try {
+                staff.setSkillTags(OBJECT_MAPPER.writeValueAsString(staffSaveDTO.getSkillTags()));
+            } catch (Exception e) {
+                throw new BusinessException("技能标签格式错误");
+            }
+        }
         staff.setStatus(StatusConstant.ENABLE);
         staffMapper.insert(staff);
     }
@@ -46,8 +56,33 @@ public class StaffServiceImpl implements StaffService {
         List<Staff> staffList = staffMapper.pageQuery(staffSaveDTO);
 
         //3.封装成pageResult并返回
-        Page<Staff> page = (Page<Staff>) staffList; // 将查询结果封装成page对象
-        // 第一个参数是总页数，第二个参数是当前页的数据
-        return new PageResult(page.getPages(),page.getRecords());
+        Page<Staff> page = (Page<Staff>) staffList;
+        return new PageResult(page.getTotal(), page.getResult());
+    }
+
+    @Override
+    public void update(Long id, StaffSaveDTO staffSaveDTO) {
+        Staff staff = staffMapper.selectById(id);
+        if (staff == null) {
+            throw new BusinessException("员工不存在");
+        }
+        BeanUtils.copyProperties(staffSaveDTO, staff);
+        if (staffSaveDTO.getSkillTags() != null) {
+            try {
+                staff.setSkillTags(OBJECT_MAPPER.writeValueAsString(staffSaveDTO.getSkillTags()));
+            } catch (Exception e) {
+                throw new BusinessException("技能标签格式错误");
+            }
+        }
+        staffMapper.updateById(staff);
+    }
+
+    @Override
+    public void delete(Long id) {
+        Staff staff = staffMapper.selectById(id);
+        if (staff == null) {
+            throw new BusinessException("员工不存在");
+        }
+        staffMapper.deleteById(id);
     }
 }

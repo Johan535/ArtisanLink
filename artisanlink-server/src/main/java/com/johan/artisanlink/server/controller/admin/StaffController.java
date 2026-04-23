@@ -21,7 +21,7 @@ public class StaffController {
     // 列表查询员工
     @GetMapping("/list")
     public Result page(StaffSaveDTO staffSaveDTO){
-        log.info("分页查询员工信息，参数：page：",staffSaveDTO);
+        log.info("分页查询员工信息，参数：{}", staffSaveDTO);
         PageResult pageResult =  staffService.page(staffSaveDTO);
         return Result.success(pageResult);
     }
@@ -34,9 +34,21 @@ public class StaffController {
         return Result.success();
     }
 
+    // 更新员工
+    @PutMapping("/update/{id}")
+    public Result update(@PathVariable Long id, @RequestBody StaffSaveDTO staffSaveDTO) {
+        log.info("更新员工：id={}, data={}", id, staffSaveDTO);
+        staffService.update(id, staffSaveDTO);
+        return Result.success();
+    }
 
-
-
+    // 删除员工
+    @DeleteMapping("/delete/{id}")
+    public Result delete(@PathVariable Long id) {
+        log.info("删除员工：id={}", id);
+        staffService.delete(id);
+        return Result.success();
+    }
 }
 
 

@@ -208,5 +208,9 @@ class WebSocketClient {
 // 单例模式
 const wsClient = new WebSocketClient()
 
+export function useWebSocket() {
+  return wsClient
+}
+
 export default wsClient
 export { WS_MESSAGE_TYPE }

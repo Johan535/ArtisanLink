@@ -86,4 +86,22 @@ public class MerchantServiceImpl implements MerchantService {
         }
         return merchant;
     }
+
+    @Override
+    public Merchant getCurrentMerchantInfo() {
+        LambdaQueryWrapper<Merchant> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByAsc(Merchant::getId).last("limit 1");
+        Merchant merchant = merchantMapper.selectOne(queryWrapper);
+        if (merchant == null) {
+            throw new BusinessException("暂无商户信息");
+        }
+        return merchant;
+    }
+
+    @Override
+    public void updateCurrentMerchantInfo(MerchantUpdateDTO updateDTO) {
+        Merchant current = getCurrentMerchantInfo();
+        updateDTO.setId(current.getId());
+        update(updateDTO);
+    }
 }

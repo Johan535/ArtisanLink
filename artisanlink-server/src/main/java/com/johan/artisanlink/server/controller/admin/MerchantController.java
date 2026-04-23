@@ -55,4 +55,17 @@ public class MerchantController {
         Merchant merchant = merchantService.getById(id);
         return Result.success(merchant);
     }
+
+    @GetMapping("/info")
+    public Result<Merchant> getCurrentInfo() {
+        log.info("查询当前商户信息");
+        return Result.success(merchantService.getCurrentMerchantInfo());
+    }
+
+    @PutMapping("/info")
+    public Result updateCurrentInfo(@RequestBody MerchantUpdateDTO merchantUpdateDTO) {
+        log.info("更新当前商户信息: {}", merchantUpdateDTO);
+        merchantService.updateCurrentMerchantInfo(merchantUpdateDTO);
+        return Result.success();
+    }
 }

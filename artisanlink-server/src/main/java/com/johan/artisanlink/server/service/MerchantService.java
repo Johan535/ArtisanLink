@@ -38,4 +38,14 @@ public interface MerchantService {
      * @return 商户信息
      */
     Merchant getById(Long id);
+
+    /**
+     * 获取当前商户信息（管理端首页信息）
+     */
+    Merchant getCurrentMerchantInfo();
+
+    /**
+     * 更新当前商户信息
+     */
+    void updateCurrentMerchantInfo(MerchantUpdateDTO updateDTO);
 }

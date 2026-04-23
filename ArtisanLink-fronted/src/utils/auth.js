@@ -32,6 +32,11 @@ export function removeToken() {
   localStorage.removeItem(TOKEN_KEY)
 }
 
+// 兼容旧版命名
+export function clearToken() {
+  removeToken()
+}
+
 /**
  * 设置用户信息（通用）
  * @param {Object} userInfo - 用户信息对象
@@ -56,6 +61,13 @@ export function getUserInfo() {
  */
 export function removeUserInfo() {
   localStorage.removeItem(USER_INFO_KEY)
+}
+
+/**
+ * 清除管理员信息（兼容旧版）
+ */
+export function clearAdminInfo() {
+  localStorage.removeItem(ADMIN_INFO_KEY)
 }
 
 /**

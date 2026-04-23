@@ -109,6 +109,15 @@ public class ServiceManagementServiceImpl implements ServiceManagementService {
         return service;
     }
 
+    @Override
+    public void delete(Long id) {
+        com.johan.artisanlink.pojo.po.Service service = serviceMapper.selectById(id);
+        if (service == null) {
+            throw new BusinessException("服务不存在");
+        }
+        serviceMapper.deleteById(id);
+    }
+
     /**
      * 查询服务分类列表
      */

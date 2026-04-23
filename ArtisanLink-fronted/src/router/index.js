@@ -1,12 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginView from '../views/LoginView.vue'
-import DashboardView from '../views/DashboardView.vue'
-import StaffView from '../views/StaffView.vue'
-import ServiceView from '../views/ServiceView.vue'
-import OrderView from '../views/OrderView.vue'
-import CustomerView from '../views/CustomerView.vue'
-import StatisticsView from '../views/StatisticsView.vue'
-import MerchantView from '../views/MerchantView.vue'
 
 // C端用户端页面
 import CustomerLayout from '../components/CustomerLayout.vue'
@@ -18,15 +10,15 @@ import OrderListView from '../views/customer/OrderListView.vue'
 import OrderDetailView from '../views/customer/OrderDetailView.vue'
 import ProfileView from '../views/customer/ProfileView.vue'
 import MessageView from '../views/customer/MessageView.vue'
-import { getToken } from '@/utils/auth'
+import { getToken, getUserInfo } from '@/utils/auth'
 import AdminLayout from '../components/AdminLayout.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: LoginView,
-    meta: { requiresAuth: false }
+    component: () => import('../views/admin/LoginView.vue'),
+    meta: { title: '管理员登录' }
   },
   {
     path: '/',
@@ -35,66 +27,63 @@ const routes = [
   // B端管理端路由
   {
     path: '/admin',
-    component: () => import('@/components/AdminLayout.vue'),
-    meta: { requiresAuth: true },
+    name: 'AdminLayout',
+    component: () => import('../components/AdminLayout.vue'),
+    meta: { requiresAuth: true, role: 'merchant' },
     children: [
-      {
-        path: '',
-        redirect: '/admin/dashboard'
-      },
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/DashboardView.vue'),
-        meta: { title: '数据概览' }
+        component: () => import('../views/DashboardView.vue'),
+        meta: { title: '数据看板' }
       },
       {
         path: 'staff',
         name: 'Staff',
-        component: () => import('@/views/StaffView.vue'),
-        meta: { title: '技师管理' }
+        component: () => import('../views/StaffView.vue'),
+        meta: { title: '员工管理' }
       },
       {
         path: 'schedule',
         name: 'Schedule',
-        component: () => import('@/views/ScheduleView.vue'),
+        component: () => import('../views/ScheduleView.vue'),
         meta: { title: '排班管理' }
       },
       {
         path: 'service',
         name: 'Service',
-        component: ServiceView,
+        component: () => import('../views/ServiceView.vue'),
         meta: { title: '服务管理' }
       },
       {
         path: 'order',
         name: 'Order',
-        component: OrderView,
-        meta: { title: '预约管理' }
+        component: () => import('../views/OrderView.vue'),
+        meta: { title: '订单管理' }
       },
       {
         path: 'customer',
         name: 'Customer',
-        component: CustomerView,
+        component: () => import('../views/CustomerView.vue'),
         meta: { title: '客户管理' }
       },
       {
         path: 'statistics',
         name: 'Statistics',
-        component: () => import('@/views/StatisticsView.vue'),
-        meta: { title: '数据统计', requiresAuth: true }
+        component: () => import('../views/StatisticsView.vue'),
+        meta: { title: '数据统计' }
       },
       {
         path: 'message',
         name: 'Message',
-        component: () => import('@/views/MessageView.vue'),
-        meta: { title: '消息中心', requiresAuth: true }
+        component: () => import('../views/MessageView.vue'),
+        meta: { title: '消息中心' }
       },
       {
         path: 'merchant',
         name: 'Merchant',
-        component: MerchantView,
-        meta: { title: '门店管理' }
+        component: () => import('../views/MerchantView.vue'),
+        meta: { title: '商户管理' }
       }
     ]
   },
@@ -198,8 +187,8 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+  const token = getToken()
+  const userInfo = getUserInfo() || {}
   
   // 需要登录的页面
   if (to.meta.requiresAuth && !token) {

@@ -37,6 +37,12 @@ public interface ServiceManagementService {
      * @return 服务信息
      */
     com.johan.artisanlink.pojo.po.Service getById(Long id);
+
+    /**
+     * 删除服务
+     * @param id 服务ID
+     */
+    void delete(Long id);
     
     /**
      * 查询服务分类列表

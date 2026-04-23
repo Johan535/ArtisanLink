@@ -6,6 +6,25 @@
 import { ElNotification } from 'element-plus'
 import { useOrderStore } from '../stores/order'
 
+const listeners = new Map()
+
+export const wsHandler = {
+  on(type, handler) {
+    if (!listeners.has(type)) {
+      listeners.set(type, new Set())
+    }
+    listeners.get(type).add(handler)
+  },
+  off(type, handler) {
+    if (!listeners.has(type)) return
+    listeners.get(type).delete(handler)
+  },
+  emit(type, payload) {
+    if (!listeners.has(type)) return
+    listeners.get(type).forEach((handler) => handler(payload))
+  }
+}
+
 /**
  * WebSocket消息类型枚举
  */
@@ -28,6 +47,7 @@ export const WS_MESSAGE_TYPE = {
  */
 export function handleWSMessage(message) {
   console.log('[WS] 收到消息:', message)
+  wsHandler.emit('message', message?.data || message)
   
   if (!message || !message.type) {
     console.warn('[WS] 无效的消息格式')
@@ -39,6 +59,7 @@ export function handleWSMessage(message) {
   switch (message.type) {
     case WS_MESSAGE_TYPE.ORDER_CREATED:
       // B端：新订单通知
+      wsHandler.emit('order_notification', message.data)
       handleNewOrder(message.data)
       break
       

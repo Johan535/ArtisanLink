@@ -13,4 +13,10 @@ public interface StaffService {
 
     // 分页查询员工
     PageResult page(StaffSaveDTO staffSaveDTO);
+
+    // 更新员工
+    void update(Long id, StaffSaveDTO staffSaveDTO);
+
+    // 删除员工
+    void delete(Long id);
 }

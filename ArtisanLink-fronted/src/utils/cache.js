@@ -155,9 +155,27 @@ class CacheManager {
     this.clearAllLocalStorage()
     this.clearAllMemory()
   }
+
+  // 兼容旧版调用：优先使用内存缓存
+  set(key, value, expire = 5 * 60 * 1000) {
+    this.setMemory(key, value, expire)
+  }
+
+  get(key) {
+    return this.getMemory(key)
+  }
+
+  remove(key) {
+    this.removeMemory(key)
+  }
+
+  clear() {
+    this.clearAll()
+  }
 }
 
 // 创建单例
 const cacheManager = new CacheManager()
 
+export { cacheManager }
 export default cacheManager

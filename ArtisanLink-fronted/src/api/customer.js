@@ -1,5 +1,9 @@
 import { request } from './http'
 
+const get = (url, params) => request({ url, method: 'get', params })
+const post = (url, data) => request({ url, method: 'post', data })
+const put = (url, data) => request({ url, method: 'put', data })
+
 /**
  * C端用户API接口
  */
@@ -10,11 +14,7 @@ export const customerApi = {
    * @param {string} code - 验证码
    */
   loginWithCode(phone, code) {
-    return request({
-      url: '/customer/login',
-      method: 'post',
-      data: { phone, code }
-    })
+    return post('/customer/login', { phone, code })
   },
   
   /**
@@ -22,21 +22,14 @@ export const customerApi = {
    * @param {string} phone - 手机号
    */
   sendSmsCode(phone) {
-    return request({
-      url: '/customer/sms/send',
-      method: 'post',
-      data: { phone }
-    })
+    return post('/customer/sms/send', { phone })
   },
   
   /**
    * 获取服务分类列表
    */
   getServiceCategories() {
-    return request({
-      url: '/customer/service/categories',
-      method: 'get'
-    })
+    return get('/customer/service/categories')
   },
 
   /**
@@ -44,11 +37,7 @@ export const customerApi = {
    * @param {Object} params - 查询参数
    */
   getServiceList(params) {
-    return request({
-      url: '/customer/service/list',
-      method: 'get',
-      params
-    })
+    return get('/customer/service/list', params)
   },
   
   /**
@@ -56,11 +45,7 @@ export const customerApi = {
    * @param {Object} params - 查询参数
    */
   getNearbyTechnicians(params) {
-    return request({
-      url: '/customer/technician/nearby',
-      method: 'get',
-      params
-    })
+    return get('/customer/technician/nearby', params)
   },
   
   /**
@@ -68,10 +53,7 @@ export const customerApi = {
    * @param {number} id - 技师ID
    */
   getTechnicianDetail(id) {
-    return request({
-      url: `/customer/technician/${id}`,
-      method: 'get'
-    })
+    return get(`/customer/technician/${id}`)
   },
   
   /**
@@ -80,11 +62,11 @@ export const customerApi = {
    * @param {string} date - 日期 YYYY-MM-DD
    */
   getAvailableTimeSlots(technicianId, date) {
-    return request({
-      url: `/customer/technician/${technicianId}/timeslots`,
-      method: 'get',
-      params: { date }
-    })
+    // 兼容旧调用：getAvailableTimeSlots({ technicianId, date })
+    if (typeof technicianId === 'object' && technicianId !== null) {
+      return get('/customer/technician/timeslots', technicianId)
+    }
+    return get(`/customer/technician/${technicianId}/timeslots`, { date })
   },
   
   /**
@@ -92,11 +74,7 @@ export const customerApi = {
    * @param {Object} data - 预约数据
    */
   createBooking(data) {
-    return request({
-      url: '/customer/order/create',
-      method: 'post',
-      data
-    })
+    return post('/customer/order/create', data)
   },
   
   /**
@@ -104,11 +82,7 @@ export const customerApi = {
    * @param {Object} params - 查询参数
    */
   getOrderList(params) {
-    return request({
-      url: '/customer/order/list',
-      method: 'get',
-      params
-    })
+    return get('/customer/order/list', params)
   },
   
   /**
@@ -116,10 +90,7 @@ export const customerApi = {
    * @param {number} id - 订单ID
    */
   getOrderDetail(id) {
-    return request({
-      url: `/customer/order/${id}`,
-      method: 'get'
-    })
+    return get(`/customer/order/${id}`)
   },
 
   /**
@@ -127,11 +98,7 @@ export const customerApi = {
    * @param {Object} data - 评价数据
    */
   createReview(data) {
-    return request({
-      url: '/customer/review/create',
-      method: 'post',
-      data
-    })
+    return post('/customer/review/create', data)
   },
 
   /**
@@ -139,11 +106,7 @@ export const customerApi = {
    * @param {Object} data - 评价数据
    */
   updateReview(data) {
-    return request({
-      url: '/customer/review/update',
-      method: 'put',
-      data
-    })
+    return put('/customer/review/update', data)
   },
 
   /**
@@ -151,10 +114,7 @@ export const customerApi = {
    * @param {number} reviewId - 评价ID
    */
   getReviewDetail(reviewId) {
-    return request({
-      url: `/customer/review/${reviewId}`,
-      method: 'get'
-    })
+    return get(`/customer/review/${reviewId}`)
   },
   
   /**
@@ -162,20 +122,14 @@ export const customerApi = {
    * @param {number} id - 订单ID
    */
   cancelOrder(id) {
-    return request({
-      url: `/customer/order/${id}/cancel`,
-      method: 'post'
-    })
+    return post(`/customer/order/${id}/cancel`)
   },
   
   /**
    * 获取用户个人信息
    */
   getUserProfile() {
-    return request({
-      url: '/customer/profile',
-      method: 'get'
-    })
+    return get('/customer/profile')
   },
   
   /**
@@ -183,11 +137,7 @@ export const customerApi = {
    * @param {Object} data - 用户信息
    */
   updateProfile(data) {
-    return request({
-      url: '/customer/profile',
-      method: 'put',
-      data
-    })
+    return put('/customer/profile', data)
   },
   
   /**
@@ -195,11 +145,7 @@ export const customerApi = {
    * @param {Object} params - 查询参数
    */
   getMessageList(params) {
-    return request({
-      url: '/customer/message/list',
-      method: 'get',
-      params
-    })
+    return get('/customer/message/list', params)
   },
   
   /**
@@ -207,55 +153,75 @@ export const customerApi = {
    * @param {number} id - 消息ID
    */
   markMessageRead(id) {
-    return request({
-      url: `/customer/message/${id}/read`,
-      method: 'post'
-    })
+    return post(`/customer/message/${id}/read`)
   },
   
   /**
    * 获取未读消息数量
    */
   getUnreadMessageCount() {
-    return request({
-      url: '/customer/message/unread-count',
-      method: 'get'
-    })
+    return get('/customer/message/unread-count')
   },
 
   // 获取案例列表
   getCaseList(params) {
-    return http.get('/customer/case/list', { params })
+    return get('/customer/case/list', params)
   },
   
   // 获取案例详情
   getCaseDetail(caseId) {
-    return http.get(`/customer/case/${caseId}`)
+    return get(`/customer/case/${caseId}`)
   },
   
   // 增加案例浏览量
   incrementCaseView(caseId) {
-    return http.post(`/customer/case/${caseId}/view`)
+    return post(`/customer/case/${caseId}/view`)
   },
   
   // 点赞/取消点赞案例
   toggleCaseLike(caseId) {
-    return http.post(`/customer/case/${caseId}/like`)
+    return post(`/customer/case/${caseId}/like`)
   },
   
   // 获取案例评论列表
   getCaseComments(caseId, params) {
-    return http.get(`/customer/case/${caseId}/comments`, { params })
+    return get(`/customer/case/${caseId}/comments`, params)
   },
   
   // 添加案例评论
   addCaseComment(caseId, data) {
-    return http.post(`/customer/case/${caseId}/comments`, data)
+    return post(`/customer/case/${caseId}/comments`, data)
   },
   
   // 点赞/取消点赞评论
   toggleCommentLike(commentId) {
-    return http.post(`/customer/comment/${commentId}/like`)
+    return post(`/customer/comment/${commentId}/like`)
+  },
+
+  // ===== 向下兼容旧页面方法名 =====
+  getMessages(params) {
+    return this.getMessageList(params)
+  },
+  updateUserProfile(data) {
+    return this.updateProfile(data)
+  },
+  getMyOrders(params) {
+    return this.getOrderList(params)
+  },
+  submitReview(data) {
+    return this.createReview(data)
+  },
+  getReviewList(params) {
+    return get('/customer/review/list', params)
+  },
+  getServiceCategoryList(params) {
+    return get('/customer/service/categories', params)
+  },
+  searchTechnicians(params) {
+    return get('/customer/technician/list', params)
+  },
+  submitAppointment(data) {
+    return this.createBooking(data)
   }
 }
 

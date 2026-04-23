@@ -65,7 +65,9 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Location } from '@element-plus/icons-vue'
-import defaultAvatar from '@/assets/images/default-avatar.png'
+
+// 默认头像URL
+const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
 
 const props = defineProps({
   technician: {

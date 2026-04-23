@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
+
 /**
  * 订单管理服务实现类
  */
@@ -52,5 +54,39 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("订单不存在");
         }
         return orders;
+    }
+
+    @Override
+    public void accept(Long id) {
+        Orders orders = getById(id);
+        if (orders.getOrderStatus() == null || orders.getOrderStatus() != 1) {
+            throw new BusinessException("当前订单状态不可接单");
+        }
+        orders.setOrderStatus(2);
+        orders.setUpdateTime(LocalDateTime.now());
+        ordersMapper.updateById(orders);
+    }
+
+    @Override
+    public void reject(Long id, String reason) {
+        Orders orders = getById(id);
+        if (orders.getOrderStatus() == null || orders.getOrderStatus() > 2) {
+            throw new BusinessException("当前订单状态不可拒单");
+        }
+        orders.setOrderStatus(4);
+        orders.setRemark(reason);
+        orders.setUpdateTime(LocalDateTime.now());
+        ordersMapper.updateById(orders);
+    }
+
+    @Override
+    public void complete(Long id) {
+        Orders orders = getById(id);
+        if (orders.getOrderStatus() == null || orders.getOrderStatus() != 2) {
+            throw new BusinessException("当前订单状态不可完结");
+        }
+        orders.setOrderStatus(3);
+        orders.setUpdateTime(LocalDateTime.now());
+        ordersMapper.updateById(orders);
     }
 }

@@ -7,8 +7,7 @@ import { adminApi } from '@/api/index'
 import { useWebSocket } from '@/utils/websocket'
 import { wsHandler } from '@/utils/wsHandler'
 import NotificationBell from './NotificationBell.vue'
-import { adminApi } from '../api'
-import { clearAdminInfo, clearToken, getAdminInfo } from '../utils/auth'
+import { clearAdminInfo, clearToken, getAdminInfo } from '@/utils/auth'
 
 const route = useRoute()
 const router = useRouter()

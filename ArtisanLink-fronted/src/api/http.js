@@ -129,4 +129,5 @@ service.interceptors.response.use(
   }
 )
 
+export const request = service
 export default service
